@@ -10,21 +10,19 @@ pygame.init()
 def iniciar_juego(tamano_matriz:int, nivel:str="fácil")->None:
     """
     Funcion : Inicia el juego de Batalla Naval, creando y mostrando la matriz del tablero
-
     Parámetros: El tamaño de la matriz del tablero del juego
-
     Retorno: None. Esta función no devuelve ningún valor
     """
 
     # --- Crea la matriz y definicion de variable principales ---
-    matriz = crear_matriz(tamano_matriz)
-    intentos = crear_matriz(tamano_matriz)
+    matriz = crear_matriz(tamano_matriz) #--- matriz donde estan las naves ---
+    intentos = crear_matriz(tamano_matriz)# --- matriz para los intentos ----
     puntaje = 0
     aciertos = []
     mensajes.clear()
 
 
-    # ---Segun el nivel coloca las naves---
+    # ---segun el nivel seleccionado , se coloca las naves y la cantidad ---
     if nivel == "medio":
         naves = [("acorazado", 4, 2), ("crucero", 3, 4), ("destructor", 2, 6), ("submarino", 1, 8)]
     elif nivel == "difícil":
@@ -34,41 +32,51 @@ def iniciar_juego(tamano_matriz:int, nivel:str="fácil")->None:
 
     coordenadas_naves = poner_naves(matriz, naves)
     tamano_celda = min(ANCHO, ALTO) // tamano_matriz
-
     corriendo = True
     casillas_clicadas = 0
-    total_casillas = tamano_matriz * tamano_matriz
+    total_casillas = tamano_matriz * tamano_matriz #---calcula tamano de la matriz ---
 
     
     while corriendo:
-        for evento in pygame.event.get():
+        for evento in pygame.event.get(): #---recorre los eventos del juego si es QUit , se cierra el juego ---
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()  
-            if evento.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos() 
-                
-                # ---Calcular la celda seleccionada en la matriz---
-                fila, columna = y // tamano_celda, x // tamano_celda
-                if 0 <= fila < tamano_matriz and 0 <= columna < tamano_matriz:
+            if evento.type == pygame.MOUSEBUTTONDOWN:# --- cuando hace click , obtiene la posicion del mouse
+                x, y = pygame.mouse.get_pos()     
+                fila, columna = y // tamano_celda, x // tamano_celda # ---calcula cual fue la celda seleccionada en la matriz con el mouse---
+                if 0 <= fila < tamano_matriz and 0 <= columna < tamano_matriz: # ---cheque que las coordenadas entan dentro de los limites de la matriz---
                     if intentos[fila][columna] == 0:  # ---Verifica si la celda se clickeo antes---
                         casillas_clicadas += 1  
+                        # --- si el jugador acierta ---
                         if matriz[fila][columna] == 1:  
-                            intentos[fila][columna] = 1
+                            intentos[fila][columna] = 1 #---se marca con un 1 ---
                             puntaje += 5
-                            aciertos.append((fila, columna))  # ---Guarda si le pegamos a la neave---
+                            aciertos.append((fila, columna))  # ---guarda si le pegamos a la neave---
                             sonido_acierto.play()
                             agregar_mensaje(f"Acierto en ({fila}, {columna})") 
                             print(f"Acierto en ({fila}, {columna})")
 
-                            # ---Esto verifica si la nave fu hundida---
-                            for nave in coordenadas_naves:
-                                if all(coordenada in aciertos for coordenada in nave):
-                                    puntaje += len(nave) * 10  # ---Le suma el puntaje adicional por haber hundido la nave---
+                            # ---verifica si la nave fu hundida---
+                            for nave in coordenadas_naves: 
+                                nave_hundida = True
+                                for coordenada in nave:
+                                    if coordenada not in aciertos:
+                                        nave_hundida = False
+                                        break  # ---si alguna coordenada no está en aciertos, termina el bucle---
+                                if nave_hundida:
+                                    puntaje += len(nave) * 10  # Le suma el puntaje adicional por haber hundido la nave
                                     sonido_hundido.play()
-                                    agregar_mensaje(f"Nave hundida! +{len(nave)*10}")  # Agregar mensaje de hundimiento
+                                    agregar_mensaje(f"Nave hundida! +{len(nave)*10}")  # ---agregar mensaje de hundimiento---
                                     print(f"Nave hundida! +{len(nave)*10}")
-                                    coordenadas_naves.remove(nave)  # ---Borra la nave hundida---
+                                    
+                                  
+                                    # Recorrer cada coordenada de la nave
+                                    for coordenada in nave:
+                                        fila = coordenada[0]  # fila de la coordenada
+                                        columna = coordenada[1]  # columna de la coordenada
+                                        intentos[fila][columna] = 2  # Marcamos la celda como 'hundida' con un 2
+                                    coordenadas_naves.remove(nave)  # ---borra la nave hundida ---
                         else:  
                             intentos[fila][columna] = -1 # --- marca el intento como fallo ---
                             puntaje -= 1 #---Le resta uno si da en el agua---
@@ -143,7 +151,7 @@ def mostrar_pantalla(tipo_pantalla:str, nivel_predeterminado:str="fácil", music
             fondo_seleccion_nivel = pygame.transform.scale(pygame.image.load('imagenes/fondo3.jpg'), (ANCHO, ALTO))
             pantalla.blit(fondo_seleccion_nivel, (0, 0))
         else:
-            pantalla.blit(fondo, (0, 0))  # ---Fondo por defecto--- 
+            pantalla.blit(fondo, (0, 0))  # ---dibuja ondo por defecto--- 
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
         
@@ -168,28 +176,26 @@ def mostrar_pantalla(tipo_pantalla:str, nivel_predeterminado:str="fácil", music
             dibujar_boton("Difícil", 300, 290, 200, 50,(252, 64, 64)    , NEGRO, hover=300 <= mouse_x <= 500 and 290 <= mouse_y <= 340)
     
 
-        for evento in pygame.event.get():
+        for evento in pygame.event.get(): # --- recorre los eventos del juego ---
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            if evento.type == pygame.MOUSEBUTTONDOWN:
+            if evento.type == pygame.MOUSEBUTTONDOWN: #--- cuando se hace click , se obtiene la posicion del mouse ---
                 x, y = pygame.mouse.get_pos() 
-
+                # --- depende donde se clikea (diferentes botones), realiza diferentes acciones 
                 if tipo_pantalla == "inicio":      
                     if 300 <= x <= 500 and 140 <= y <= 200:
                         mostrar_pantalla("seleccion_nivel", nivel_predeterminado, music_on)       
                     elif 300 <= x <= 500 and 220 <= y <= 270:
                         iniciar_juego(10, nivel=nivel_predeterminado)
-                        corriendo = False     
-                  
+                        corriendo = False                       
                     elif 300 <= x <= 500 and 290 <= y <= 340:
-                        mostrar_pantalla_puntajes(pantalla)     
-                 
+                        mostrar_pantalla_puntajes(pantalla)                      
                     elif 300 <= x <= 500 and 360 <= y <= 410:
                         pygame.quit()
                         sys.exit()
-               
+              
                     elif 0 <= x <= 200 and 0 <= y <= 50:
                         music_on = not music_on
                         if music_on:
@@ -197,18 +203,13 @@ def mostrar_pantalla(tipo_pantalla:str, nivel_predeterminado:str="fácil", music
                         else:
                             pygame.mixer.music.stop()
 
-                elif tipo_pantalla == "seleccion_nivel":
-                
+                elif tipo_pantalla == "seleccion_nivel":  
                     if 300 <= x <= 500 and 150 <= y <= 200:
                         iniciar_juego(10, nivel="fácil")
                         corriendo = False
-                    
-                 
                     elif 300 <= x <= 500 and 220 <= y <= 270:
                         iniciar_juego(20, nivel="medio")
-                        corriendo = False
-                    
-                  
+                        corriendo = False                 
                     elif 300 <= x <= 500 and 290 <= y <= 340:
                         iniciar_juego(40, nivel="difícil")
                         corriendo = False

@@ -11,7 +11,7 @@ pantalla = pygame.display.set_mode((ANCHO, ALTO))
 # --- define configuracion de la musica ---
 music_on = True
 pygame.mixer.init()
-pygame.mixer.music.set_volume(0.0)
+pygame.mixer.music.set_volume(0.15)
 sonido_acierto = pygame.mixer.Sound('sonidos/disparo.mp3')
 sonido_fallo = pygame.mixer.Sound('sonidos/agua.mp3')
 sonido_hundido = pygame.mixer.Sound('sonidos/hundido.mp3')
@@ -42,6 +42,10 @@ imagen_victoria = pygame.transform.scale(imagen_victoria, (ANCHO, ALTO))
 fondo = pygame.image.load('imagenes/fondo.jpg')  
 fondo = pygame.transform.scale(fondo, (ANCHO, ALTO))
 fondo_nivel = pygame.image.load('imagenes/fondo1.jpg') 
+
+
+
+
 
 
 

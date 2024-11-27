@@ -1,6 +1,2 @@
-Juan,247
-lucas,223
-lucas,224
-lucas,222
-lucas,232
-lucas,220
+Lucas,229
+Juan,237

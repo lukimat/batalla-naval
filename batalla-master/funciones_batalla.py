@@ -21,6 +21,7 @@ def pedir_nombre(puntaje:int, pantalla:pygame.surface)->str:
     Retorna:El nombre ingresado por el jugador.
 
     """
+    
     fuente = pygame.font.SysFont('Arial', 23, bold = True)
     input_box = pygame.Rect(300, 300, 200, 40)
     color = pygame.Color(0, 0, 0)
@@ -30,7 +31,7 @@ def pedir_nombre(puntaje:int, pantalla:pygame.surface)->str:
     texto_titulo = fuente.render("Ingrese su nombre/nick:", True, (0, 0, 0))
 
     while True:
-        for evento in pygame.event.get():
+        for evento in pygame.event.get():# --- recorre los eventos del juego --
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
@@ -40,68 +41,17 @@ def pedir_nombre(puntaje:int, pantalla:pygame.surface)->str:
                 elif evento.key == pygame.K_BACKSPACE:  
                     text = text[0:-1]
                 else:  
-                    text += evento.unicode 
+                    text += evento.unicode # --- agrega el caracter de la tecla presionada---
         pantalla.blit(imagen_victoria, (0, 0))
         pantalla.blit(texto_puntaje, (250, 220)) 
         pantalla.blit(texto_titulo, (250, 270))
         
-        pygame.draw.rect(pantalla, color, input_box, 2)
+        pygame.draw.rect(pantalla, color, input_box, 2) #--- dibuja la caja para poner el nombre---
         texto_nombre = fuente.render(text, True, (0, 0, 0))
         pantalla.blit(texto_nombre, (input_box.x + 5, input_box.y + 5))
 
         pygame.display.flip()  
         
-
-
-# def poner_naves(matriz:list, naves:list)->list:
-#     """
-#     Funcion :Coloca las naves en un tablero representado por una matriz
-
-#     Parámetros: Recibe la matriz  que representa el tablero de juego y las naves que es una lista de tuplas con los datos (nombre , tamnanio y cantidad)
-          
-#     Retorna:Una lista de listas con las coordenadas de las naves colocadas en el tablero
-
-#     """
-#     tamano_matriz = len(matriz)  
-#     coordenadas_naves = []  
-
-#     for naves,largo, cantidad in naves:
-#         for _ in range(cantidad): #--- pone la nave la cantidad de veces indicada ---
-#             colocada = False  # ---bandera para saber si esta puesta o no la nave ---
-#             while not colocada:
-#                 orientacion = random.choice(["horizontal", "vertical"])  
-#                 fila = random.randint(0, tamano_matriz - 1) # --- selecciona aleatoriamente una fila
-#                 columna = random.randint(0, tamano_matriz - 1) 
-
-#                 # --- en horizontal ---
-#                 if orientacion == "horizontal" and columna + largo <= tamano_matriz: # ---verifica si entra la nave --
-#                     espacio_libre = True  
-#                     for i in range(largo):
-#                         if matriz[fila][columna + i] != 0: # --- verifica si algun casillero esta ocupado ---
-#                             espacio_libre = False
-#                             break  
-#                     #---si hay espacio libre coloca la nave ---
-#                     if espacio_libre:  
-#                         for i in range(largo):
-#                             matriz[fila][columna + i] = 1  #--- Marca las casillas ocupadas por la nave ---   
-#                         coordenadas_naves.append([(fila, columna + i) for i in range(largo)]) # --- agrega las coordenadas a la lista y para cada valor de i calcula la columna
-#                         colocada = True                                                       #     y genera las posiciones horizontales  ---       
-                      
-                
-#                 # --- en vertical ---
-#                 elif orientacion == "vertical" and fila + largo <= tamano_matriz:
-#                     espacio_libre = True  
-#                     for i in range(largo):
-#                         if matriz[fila + i][columna] != 0: 
-#                             espacio_libre = False
-#                             break  
-
-#                     if espacio_libre: 
-#                         for i in range(largo):
-#                             matriz[fila + i][columna] = 1                        
-#                         coordenadas_naves.append([(fila + i, columna) for i in range(largo)])
-#                         colocada = True 
-#     return coordenadas_naves  
 
 
 def poner_naves(matriz: list, naves: list) -> list:
@@ -157,7 +107,8 @@ def poner_naves(matriz: list, naves: list) -> list:
                         coordenadas_naves.append(nave_coordenadas)  # Agrega la lista de coordenadas a la lista principal.
                         colocada = True  
 
-    return coordenadas_naves
+    return coordenadas_naves  
+
 
 def dibujar_tablero(matriz: list, intentos: list, tamano_matriz: int) -> None:
     """
@@ -197,70 +148,78 @@ def dibujar_tablero(matriz: list, intentos: list, tamano_matriz: int) -> None:
                 centro = (x + tamano_celda // 2, y + tamano_celda // 2)
                 pygame.draw.circle(pantalla, (0, 0, 255), centro, tamano_celda // 3, 0)
 
+            elif intentos[fila][columna] == 2:  # Si la nave ha sido hundida
+                # ---dibuja circulo rojo ----
+                centro = (x + tamano_celda // 2, y + tamano_celda // 2)
+                pygame.draw.circle(pantalla, (255, 0, 0), centro, tamano_celda // 3, 0)
 
 
 
 
-def mostrar_pantalla_puntajes(pantalla:pygame.surface)->None:
+def mostrar_pantalla_puntajes(pantalla: pygame.Surface) -> None:
     """
-    Funcion : Muestra una pantalla con los 5 puntajes más altos del juego
-
-    Parámetros: No recibe parámetros
-
-    Retorna: No retorna ningún valor
+    Función que muestra una pantalla con los 3 puntajes más altos del juego.
+    
+    Parámetros:
+    - pantalla (pygame.Surface): La superficie en la que se va a dibujar la pantalla de puntajes.
+    
+    No retorna ningún valor.
     """
-
+    
     corriendo = True
     fondo = pygame.transform.scale(pygame.image.load('imagenes/fondo2.1.png'), (ANCHO, ALTO))
     puntajes = []
-    
-    with open("puntajes.txt", "a+") as archivo:  # --- Abre el archivo de puntajes en modo lectura/escritura, creando el archivo si no existe ---  
-        archivo.seek(0) 
-        for linea in archivo.readlines():  # Itera sobre cada línea del archivo
-            linea = linea.strip()  # Elimina los espacios en blanco iniciales y finales
-            if linea:  # Comprueba que la línea no esté vacía
-                puntajes.append(linea.split(","))  # Divide la línea por comas y la agrega a la lista
-        puntajes.sort(key=lambda x: x[1], reverse=True) # --- Ordena la lista de puntajes de mayor a menor, segun el segundo elemento  --
 
+    # Abrir el archivo solo una vez antes del bucle principal
+    with open("puntajes.txt", "r") as archivo:  # Modo 'r' para solo lectura
+        for linea in archivo.readlines():
+            linea = linea.strip()  # Elimina espacios en blanco
+            if linea:  # Solo procesar si la línea no está vacía
+                datos = linea.split(",")  # Dividir la línea por comas
+                if len(datos) == 2:  # Asegurarse de que hay exactamente dos elementos
+                    puntajes.append(datos)  # Agregar a la lista si es válido
+
+    # Ordena la lista de puntajes de mayor a menor según el segundo elemento (puntos)
+    puntajes.sort(key=lambda x: int(x[1]), reverse=True)
 
     while corriendo:
         pantalla.blit(fondo, (0, 0))
         mostrar_texto("Puntajes", NEGRO, 330, 30)
-        # Crear fondo semitransparente para los puntajes
-        fondo_puntajes = pygame.Surface((265, 100))  # Superficie que abarca el área de los puntajes
-        fondo_puntajes.set_alpha(180)  # Establecer la transparencia
-        fondo_puntajes.fill((100, 150, 230))  # Color de fondo (blanco suave)
 
-        # Dibujar el fondo semitransparente
+        # Crear un fondo semitransparente para los puntajes
+        fondo_puntajes = pygame.Surface((265, 100))
+        fondo_puntajes.set_alpha(180)
+        fondo_puntajes.fill((100, 150, 230))  # Color de fondo (blanco suave)
         pantalla.blit(fondo_puntajes, (265, 140))
 
+        # ---dibujar los primeros 3 puntajes en la pantalla , si es que hay ---
+        for i in range(3):  
+            if i < len(puntajes):  #--- verifica si hay suficiente información en la lista---
+                nombre, puntos = puntajes[i]
+                mostrar_texto(f"{i+1}. {nombre}: {puntos} puntos", NEGRO, 275, 150 + i * 30)
+            else:
+                mostrar_texto(f"{i+1}.      ----------", NEGRO, 275, 150 + i * 30)
 
-        for i in range(min(3, len(puntajes))):
-            nombre, puntos = puntajes[i]
-            mostrar_texto(f"{i+1}. {nombre}: {puntos} puntos", NEGRO, 275, 150 + i * 30)
-
-       
-        for i in range(len(puntajes), 3):
-            mostrar_texto(f"{i+1}.      ---------- ", NEGRO, 275, 150 + i * 30)
-
-        # Obtener la posición del mouse
         mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover_volver = 300 <= mouse_x <= 500 and 360 <= mouse_y <= 410  # ---verificar si el mouse está sobre el botón "Volver"---
 
-        # Verificar si el mouse está sobre el botón "Volver"
-        hover_volver = 300 <= mouse_x <= 500 and 360 <= mouse_y <= 410
-       
+        # --dibujar el botón "Volver"---
         dibujar_boton("Volver", 300, 360, 200, 50, (135, 206, 235), NEGRO, hover=hover_volver)
 
+         # ---si se hace clic en el botón "Volver"--- 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if evento.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
-                if 300 <= x <= 500 and 360 <= y <= 410:
+                if 300 <= x <= 500 and 360 <= y <= 410: 
                     corriendo = False
 
         pygame.display.flip()
+
+
+
 
 
 
@@ -326,8 +285,8 @@ def guardar_puntaje(nombre: str, puntaje: int) -> None:
     Parámetros:El nombre del jugador y el puntaje obtenido por el jugador.
     Retorno: None
     """
-    with open("puntajes.txt", "a") as archivo:
-        archivo.write(f"{nombre},{puntaje}\n")
+    with open("puntajes.txt", "a") as archivo: #---abre el archivo , si esxiste , agrega los datos al final , sino lo crea.
+        archivo.write(f"{nombre},{puntaje}\n") # ---escribe en el archivo los datos con el formato dado por el f string---
 
 
 
@@ -338,8 +297,8 @@ def agregar_mensaje(mensaje: str) -> None:
     Retorno:None
     """
     if len(mensajes) >= 5:
-        mensajes.pop(0)  # Elimina el mensaje más antiguo si ya hay 3
-    mensajes.append(mensaje)  # Agrega el nuevo mensaje
+        mensajes.pop(0)  # ---elimina el mensaje más antiguo si ya hay 5 o mas ---
+    mensajes.append(mensaje)  # ---agrega el nuevo mensaje al final ---
 
 
 def mostrar_mensajes() -> None:
@@ -348,13 +307,13 @@ def mostrar_mensajes() -> None:
     Parámetros: Ninguno
     Retorno: None
     """
-    y_pos = 150  
+    y_pos = 150  # ---se setea donde se va a dibujar el mensaje---
     x_pos = 610  
     fuente_mensajes = pygame.font.SysFont('Arial', 18)  
     for mensaje in mensajes:
-        texto_renderizado = fuente_mensajes.render(mensaje, True, 'blue')  
-        pantalla.blit(texto_renderizado, (x_pos, y_pos)) 
-        y_pos += 20
+        texto_renderizado = fuente_mensajes.render(mensaje, True, 'blue')  #--- convierte cada mensaje en un objeto que puede ser dibujado en la pantalla---
+        pantalla.blit(texto_renderizado, (x_pos, y_pos)) #--- lo dibuja---
+        y_pos += 20 #--- se va sumando pixeles para que el sigu. mje se dibuje debajo del anterior/
 
 
 
@@ -375,8 +334,7 @@ def boton_presionado(x: int, y: int, ancho: int, alto: int, mouse_x: int, mouse_
 
 def dibujar_boton(texto: str, x: int, y: int, ancho: int, alto: int, color_base: tuple, color_texto: tuple, hover: bool = False, color_borde: tuple = (0, 0, 0), radio_bordes: int = 8) -> None:
     """
-    Dibuja un botón redondeado con borde y texto, y opcionalmente cambia de color si el mouse está sobre él.
-    
+    Funcion :Dibuja un botón redondeado con borde y texto, y opcionalmente cambia de color si el mouse está sobre él. 
     Parámetros:
     texto (: Texto a mostrar en el botón.
     x, y : Coordenadas de la esquina superior izquierda del botón.
